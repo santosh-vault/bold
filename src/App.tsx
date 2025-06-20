@@ -6,7 +6,8 @@ import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import Dashboard from './pages/Dashboard';
-import Wardrobe from './pages/Wardrobe';
+import AdvancedWardrobe from './pages/AdvancedWardrobe';
+import ItemRecommendations from './pages/ItemRecommendations';
 import Outfits from './pages/Outfits';
 import Recommendations from './pages/Recommendations';
 
@@ -85,7 +86,15 @@ const AppContent: React.FC = () => {
           path="/wardrobe"
           element={
             <ProtectedRoute>
-              <Wardrobe />
+              <AdvancedWardrobe />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/wardrobe/item/:itemId/recommendations"
+          element={
+            <ProtectedRoute>
+              <ItemRecommendations />
             </ProtectedRoute>
           }
         />
