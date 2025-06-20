@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { Database } from '../lib/database.types';
 import { useAuth } from './useAuth';
@@ -13,16 +13,13 @@ export const useWardrobeItems = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (user) {
-      fetchItems();
-    } else {
+  const fetchItems = useCallback(async () => {
+    if (!user) {
       setItems([]);
       setLoading(false);
+      return;
     }
-  }, [user]);
 
-  const fetchItems = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -40,9 +37,13 @@ export const useWardrobeItems = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
-  const addItem = async (item: Omit<WardrobeItemInsert, 'user_id'>) => {
+  useEffect(() => {
+    fetchItems();
+  }, [fetchItems]);
+
+  const addItem = useCallback(async (item: Omit<WardrobeItemInsert, 'user_id'>) => {
     if (!user) throw new Error('User not authenticated');
 
     const { data, error } = await supabase
@@ -58,9 +59,9 @@ export const useWardrobeItems = () => {
 
     setItems(prev => [data, ...prev]);
     return data;
-  };
+  }, [user]);
 
-  const updateItem = async (id: string, updates: WardrobeItemUpdate) => {
+  const updateItem = useCallback(async (id: string, updates: WardrobeItemUpdate) => {
     const { data, error } = await supabase
       .from('wardrobe_items')
       .update(updates)
@@ -72,9 +73,9 @@ export const useWardrobeItems = () => {
 
     setItems(prev => prev.map(item => item.id === id ? data : item));
     return data;
-  };
+  }, []);
 
-  const deleteItem = async (id: string) => {
+  const deleteItem = useCallback(async (id: string) => {
     const { error } = await supabase
       .from('wardrobe_items')
       .delete()
@@ -83,9 +84,9 @@ export const useWardrobeItems = () => {
     if (error) throw error;
 
     setItems(prev => prev.filter(item => item.id !== id));
-  };
+  }, []);
 
-  const incrementWearCount = async (id: string) => {
+  const incrementWearCount = useCallback(async (id: string) => {
     const item = items.find(i => i.id === id);
     if (!item) return;
 
@@ -93,7 +94,7 @@ export const useWardrobeItems = () => {
       wear_count: item.wear_count + 1,
       last_worn: new Date().toISOString().split('T')[0],
     });
-  };
+  }, [items, updateItem]);
 
   return {
     items,
