@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useWardrobeItems } from './useWardrobeItems';
 import { WardrobeSorter, WardrobeSearcher, FilterCriteria, SortOption } from '../lib/algorithms';
 import { AIRecommendationEngine, AIRecommendation } from '../lib/aiRecommendations';
@@ -15,7 +15,7 @@ export const useAdvancedWardrobe = () => {
   const [loadingRecommendations, setLoadingRecommendations] = useState<Set<string>>(new Set());
 
   // Available sort options
-  const sortOptions: SortOption[] = [
+  const sortOptions: SortOption[] = useMemo(() => [
     { key: 'created_at', label: 'Date Added', direction: 'desc' },
     { key: 'name', label: 'Name A-Z', direction: 'asc' },
     { key: 'name', label: 'Name Z-A', direction: 'desc' },
@@ -26,29 +26,30 @@ export const useAdvancedWardrobe = () => {
     { key: 'category', label: 'Category', direction: 'asc' },
     { key: 'color', label: 'Color', direction: 'asc' },
     { key: 'last_worn', label: 'Recently Worn', direction: 'desc' }
-  ];
+  ], []);
 
-  // Advanced filtering and sorting
-  const processedItems = useMemo(() => {
-    let items = [...wardrobeHook.items];
+  // Memoized search function
+  const searchItems = useCallback((items: WardrobeItem[], query: string) => {
+    if (!query.trim()) return items;
+    
+    return WardrobeSearcher.fuzzySearch(
+      items,
+      query,
+      (item) => `${item.name} ${item.brand || ''} ${item.color} ${item.tags.join(' ')}`,
+      0.3
+    );
+  }, []);
 
-    // Apply search
-    if (searchQuery.trim()) {
-      items = WardrobeSearcher.fuzzySearch(
-        items,
-        searchQuery,
-        (item) => `${item.name} ${item.brand || ''} ${item.color} ${item.tags.join(' ')}`,
-        0.3
-      );
-    }
+  // Memoized filter function
+  const filterItems = useCallback((items: WardrobeItem[], criteria: FilterCriteria) => {
+    return WardrobeSearcher.advancedFilter(items, criteria, (item) => item);
+  }, []);
 
-    // Apply filters
-    items = WardrobeSearcher.advancedFilter(items, filterCriteria, (item) => item);
-
-    // Apply sorting
+  // Memoized sort function
+  const sortItems = useCallback((items: WardrobeItem[], option: SortOption) => {
     const compareFn = (a: WardrobeItem, b: WardrobeItem) => {
-      let aValue: any = a[sortOption.key as keyof WardrobeItem];
-      let bValue: any = b[sortOption.key as keyof WardrobeItem];
+      let aValue: any = a[option.key as keyof WardrobeItem];
+      let bValue: any = b[option.key as keyof WardrobeItem];
 
       // Handle null/undefined values
       if (aValue == null && bValue == null) return 0;
@@ -61,17 +62,33 @@ export const useAdvancedWardrobe = () => {
         bValue = bValue.toLowerCase();
       }
 
-      if (aValue < bValue) return sortOption.direction === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortOption.direction === 'asc' ? 1 : -1;
+      if (aValue < bValue) return option.direction === 'asc' ? -1 : 1;
+      if (aValue > bValue) return option.direction === 'asc' ? 1 : -1;
       return 0;
     };
 
-    // Use merge sort for stable sorting
+    // Use merge sort for stable sorting with better performance
     return WardrobeSorter.mergeSort(items, compareFn);
-  }, [wardrobeHook.items, searchQuery, sortOption, filterCriteria]);
+  }, []);
+
+  // Advanced filtering and sorting with memoization
+  const processedItems = useMemo(() => {
+    let items = [...wardrobeHook.items];
+
+    // Apply search
+    items = searchItems(items, searchQuery);
+
+    // Apply filters
+    items = filterItems(items, filterCriteria);
+
+    // Apply sorting
+    items = sortItems(items, sortOption);
+
+    return items;
+  }, [wardrobeHook.items, searchQuery, filterCriteria, sortOption, searchItems, filterItems, sortItems]);
 
   // Generate AI recommendations for an item
-  const generateRecommendations = async (itemId: string) => {
+  const generateRecommendations = useCallback(async (itemId: string) => {
     const item = wardrobeHook.items.find(i => i.id === itemId);
     if (!item || loadingRecommendations.has(itemId)) return;
 
@@ -93,14 +110,14 @@ export const useAdvancedWardrobe = () => {
         return newSet;
       });
     }
-  };
+  }, [wardrobeHook.items, loadingRecommendations]);
 
   // Get recommendations for an item
-  const getRecommendations = (itemId: string): AIRecommendation | undefined => {
+  const getRecommendations = useCallback((itemId: string): AIRecommendation | undefined => {
     return aiRecommendations.get(itemId);
-  };
+  }, [aiRecommendations]);
 
-  // Analytics and insights
+  // Analytics and insights with memoization
   const analytics = useMemo(() => {
     const items = wardrobeHook.items;
     
@@ -154,7 +171,7 @@ export const useAdvancedWardrobe = () => {
     };
   }, [wardrobeHook.items]);
 
-  // Smart suggestions
+  // Smart suggestions with memoization
   const smartSuggestions = useMemo(() => {
     const suggestions: string[] = [];
     
@@ -180,6 +197,10 @@ export const useAdvancedWardrobe = () => {
     
     return suggestions;
   }, [analytics]);
+
+  // Optimized clear functions
+  const clearFilters = useCallback(() => setFilterCriteria({}), []);
+  const resetSearch = useCallback(() => setSearchQuery(''), []);
 
   return {
     // Basic wardrobe operations
@@ -207,7 +228,7 @@ export const useAdvancedWardrobe = () => {
     smartSuggestions,
     
     // Utility functions
-    clearFilters: () => setFilterCriteria({}),
-    resetSearch: () => setSearchQuery(''),
+    clearFilters,
+    resetSearch,
   };
 };

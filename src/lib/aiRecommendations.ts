@@ -1,4 +1,4 @@
-// AI-powered clothing recommendations
+// AI-powered clothing recommendations with optimized performance
 import { ColorAnalyzer, StyleMatcher } from './algorithms';
 
 export interface AIRecommendation {
@@ -44,13 +44,21 @@ export class AIRecommendationEngine {
     }
   };
 
+  // Cache for color analysis to improve performance
+  private static colorCache = new Map<string, string[]>();
+
   static async generateRecommendations(
     baseItem: any, 
     wardrobeItems: any[], 
     userPreferences?: any
   ): Promise<AIRecommendation> {
-    // Analyze base item
-    const dominantColors = await ColorAnalyzer.extractDominantColors(baseItem.image_url);
+    // Use cached colors or analyze if not cached
+    let dominantColors = this.colorCache.get(baseItem.image_url);
+    if (!dominantColors) {
+      dominantColors = await this.extractDominantColorsOptimized(baseItem.image_url);
+      this.colorCache.set(baseItem.image_url, dominantColors);
+    }
+
     const complementaryColors = ColorAnalyzer.getComplementaryColors(dominantColors[0]);
     
     // Determine style based on item characteristics
@@ -74,6 +82,64 @@ export class AIRecommendationEngine {
       style: detectedStyle,
       occasion: this.suggestOccasion(baseItem, detectedStyle)
     };
+  }
+
+  private static async extractDominantColorsOptimized(imageUrl: string): Promise<string[]> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Reduce canvas size for faster processing
+        const maxSize = 100;
+        const scale = Math.min(maxSize / img.width, maxSize / img.height);
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        
+        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
+        const colors = this.analyzeImageDataOptimized(imageData);
+        resolve(colors);
+      };
+      
+      img.onerror = () => resolve(['#000000']);
+      img.src = imageUrl;
+    });
+  }
+
+  private static analyzeImageDataOptimized(imageData: ImageData | undefined): string[] {
+    if (!imageData) return ['#000000'];
+    
+    const colorMap = new Map<string, number>();
+    const data = imageData.data;
+    
+    // Sample every 20th pixel for better performance
+    for (let i = 0; i < data.length; i += 80) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      const alpha = data[i + 3];
+      
+      if (alpha > 128) { // Skip transparent pixels
+        // Quantize colors to reduce variations
+        const quantizedR = Math.round(r / 32) * 32;
+        const quantizedG = Math.round(g / 32) * 32;
+        const quantizedB = Math.round(b / 32) * 32;
+        
+        const color = this.rgbToHex(quantizedR, quantizedG, quantizedB);
+        colorMap.set(color, (colorMap.get(color) || 0) + 1);
+      }
+    }
+    
+    // Get top 3 colors for faster processing
+    return Array.from(colorMap.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([color]) => color);
   }
 
   private static detectItemStyle(item: any): string {
@@ -260,6 +326,10 @@ export class AIRecommendationEngine {
     if (baseItem.category === 'Accessories') return 'Accent Piece, Style Enhancement';
     
     return baseOccasion;
+  }
+
+  private static rgbToHex(r: number, g: number, b: number): string {
+    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
   }
 
   // Generate shopping recommendations for missing pieces

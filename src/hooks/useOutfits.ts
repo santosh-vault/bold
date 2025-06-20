@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { Database } from '../lib/database.types';
 import { useAuth } from './useAuth';
@@ -18,16 +18,13 @@ export const useOutfits = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (user) {
-      fetchOutfits();
-    } else {
+  const fetchOutfits = useCallback(async () => {
+    if (!user) {
       setOutfits([]);
       setLoading(false);
+      return;
     }
-  }, [user]);
 
-  const fetchOutfits = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -55,9 +52,13 @@ export const useOutfits = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
-  const addOutfit = async (
+  useEffect(() => {
+    fetchOutfits();
+  }, [fetchOutfits]);
+
+  const addOutfit = useCallback(async (
     outfit: Omit<OutfitInsert, 'user_id'>,
     itemIds: string[]
   ) => {
@@ -89,9 +90,9 @@ export const useOutfits = () => {
     // Fetch the complete outfit with items
     await fetchOutfits();
     return outfitData;
-  };
+  }, [user, fetchOutfits]);
 
-  const updateOutfit = async (id: string, updates: OutfitUpdate) => {
+  const updateOutfit = useCallback(async (id: string, updates: OutfitUpdate) => {
     const { data, error } = await supabase
       .from('outfits')
       .update(updates)
@@ -105,9 +106,9 @@ export const useOutfits = () => {
       outfit.id === id ? { ...outfit, ...data } : outfit
     ));
     return data;
-  };
+  }, []);
 
-  const deleteOutfit = async (id: string) => {
+  const deleteOutfit = useCallback(async (id: string) => {
     const { error } = await supabase
       .from('outfits')
       .delete()
@@ -116,7 +117,7 @@ export const useOutfits = () => {
     if (error) throw error;
 
     setOutfits(prev => prev.filter(outfit => outfit.id !== id));
-  };
+  }, []);
 
   return {
     outfits,
