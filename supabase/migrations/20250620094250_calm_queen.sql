@@ -103,19 +103,20 @@ CREATE POLICY "Users can view own profile"
   ON profiles
   FOR SELECT
   TO authenticated
-  USING (auth.uid() = id);
+  USING (id = (SELECT auth.uid()));
+
 
 CREATE POLICY "Users can update own profile"
   ON profiles
   FOR UPDATE
   TO authenticated
-  USING (auth.uid() = id);
+  USING (id = (SELECT auth.uid()));
 
 CREATE POLICY "Users can insert own profile"
   ON profiles
   FOR INSERT
   TO authenticated
-  WITH CHECK (auth.uid() = id);
+  WITH CHECK (id = (SELECT auth.uid()));
 
 -- Create policies for wardrobe_items
 CREATE POLICY "Users can view own wardrobe items"
