@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Sparkles, ShoppingBag, Heart, ExternalLink, Loader, Star, TrendingUp } from 'lucide-react';
 import { useAdvancedWardrobe } from '../hooks/useAdvancedWardrobe';
-import { AIRecommendation } from '../lib/aiRecommendations';
+import { AIRecommendation, AIRecommendationEngine } from '../lib/aiRecommendations';
 import Card from '../components/Card';
 import Button from '../components/Button';
 
@@ -123,9 +123,7 @@ const ItemRecommendations: React.FC = () => {
   );
 
   const renderShoppingSuggestions = (recommendation: AIRecommendation) => {
-    const shoppingSuggestions = recommendation.recommendedItems.filter(
-      item => !item.existingMatches || item.existingMatches.length === 0
-    );
+    const shoppingSuggestions = AIRecommendationEngine.generateShoppingRecommendations(recommendation);
 
     if (shoppingSuggestions.length === 0) {
       return (
@@ -137,67 +135,110 @@ const ItemRecommendations: React.FC = () => {
       );
     }
 
+    // Group suggestions by category
+    const suggestionsByCategory = shoppingSuggestions.reduce((acc, suggestion) => {
+      if (!acc[suggestion.category]) {
+        acc[suggestion.category] = [];
+      }
+      acc[suggestion.category].push(suggestion);
+      return acc;
+    }, {} as Record<string, any[]>);
+
     return (
-      <div className="space-y-6">
-        {shoppingSuggestions.map((suggestion, index) => (
-          <Card key={index} className="p-6">
+      <div className="space-y-8">
+        {Object.entries(suggestionsByCategory).map(([category, suggestions]) => (
+          <div key={category}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">{suggestion.category}</h3>
+              <h3 className="text-xl font-semibold text-gray-900">{category}</h3>
               <div className="flex items-center">
                 <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                <span className="text-sm text-green-600 font-medium">High Priority</span>
+                <span className="text-sm text-green-600 font-medium">Recommended</span>
               </div>
             </div>
 
-            <p className="text-sm text-gray-600 mb-4">{suggestion.reasoning}</p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Recommended Colors:</h4>
-                <div className="flex flex-wrap gap-2">
-                  {suggestion.suggestedColors.map((color, colorIndex) => (
-                    <div key={colorIndex} className="flex items-center space-x-2">
-                      <div
-                        className="w-4 h-4 rounded-full border border-gray-300"
-                        style={{ backgroundColor: color }}
-                      />
-                      <span className="text-xs text-gray-600 capitalize">{color}</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {suggestions.map((suggestion, index) => (
+                <Card key={index} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <div className="aspect-square bg-gray-100">
+                    <img
+                      src={suggestion.imageUrl}
+                      alt={suggestion.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=400';
+                      }}
+                    />
+                  </div>
+                  
+                  <div className="p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <h4 className="font-semibold text-gray-900 text-sm">{suggestion.name}</h4>
+                      <button className="p-1 text-gray-400 hover:text-red-500 transition-colors">
+                        <Heart className="w-4 h-4" />
+                      </button>
                     </div>
-                  ))}
-                </div>
-              </div>
+                    
+                    <p className="text-xs text-gray-600 mb-2">{suggestion.description}</p>
+                    
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-lg font-bold text-green-600">${suggestion.price}</span>
+                      <span className="text-sm text-gray-500">{suggestion.store}</span>
+                    </div>
 
-              <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Style Suggestions:</h4>
-                <div className="flex flex-wrap gap-2">
-                  {suggestion.suggestedStyles.map((style, styleIndex) => (
-                    <span
-                      key={styleIndex}
-                      className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-xs"
-                    >
-                      {style}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
+                    <div className="mb-3">
+                      <div className="flex flex-wrap gap-1 mb-2">
+                        {suggestion.colors.slice(0, 3).map((color: string, colorIndex: number) => (
+                          <span
+                            key={colorIndex}
+                            className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs"
+                          >
+                            {color}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {suggestion.styles.slice(0, 2).map((style: string, styleIndex: number) => (
+                          <span
+                            key={styleIndex}
+                            className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs"
+                          >
+                            {style}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
 
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Where to Shop:</h4>
-              <div className="flex flex-wrap gap-2">
-                {['Zara', 'H&M', 'Uniqlo', 'COS'].map((store, storeIndex) => (
-                  <a
-                    key={storeIndex}
-                    href="#"
-                    className="inline-flex items-center px-3 py-1 bg-white border border-gray-200 rounded text-xs text-gray-700 hover:bg-gray-100 transition-colors"
-                  >
-                    {store}
-                    <ExternalLink className="w-3 h-3 ml-1" />
-                  </a>
-                ))}
-              </div>
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 text-xs"
+                        onClick={() => window.open(suggestion.link, '_blank')}
+                      >
+                        <ExternalLink className="w-3 h-3 mr-1" />
+                        View
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="flex-1 text-xs"
+                        onClick={() => window.open(suggestion.link, '_blank')}
+                      >
+                        <ShoppingBag className="w-3 h-3 mr-1" />
+                        Shop
+                      </Button>
+                    </div>
+
+                    <div className="mt-2 text-xs text-gray-500">
+                      <div className="flex items-center">
+                        <Star className="w-3 h-3 text-yellow-500 fill-current mr-1" />
+                        <span>{(suggestion.priority * 100).toFixed(0)}% match with your style</span>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
             </div>
-          </Card>
+          </div>
         ))}
       </div>
     );

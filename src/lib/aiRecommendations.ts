@@ -18,6 +18,18 @@ export interface RecommendedItem {
   compatibilityScore: number;
   reasoning: string;
   existingMatches?: any[];
+  shoppingSuggestions?: ShoppingSuggestion[];
+}
+
+export interface ShoppingSuggestion {
+  name: string;
+  price: number;
+  store: string;
+  imageUrl: string;
+  link: string;
+  description: string;
+  colors: string[];
+  styles: string[];
 }
 
 export class AIRecommendationEngine {
@@ -42,6 +54,140 @@ export class AIRecommendationEngine {
       patterns: ['geometric', 'abstract', 'bold'],
       silhouettes: ['fitted', 'asymmetric', 'structured']
     }
+  };
+
+  // Sample shopping suggestions with real-looking product images
+  private static shoppingSuggestions = {
+    'Tops': [
+      {
+        name: 'Classic White Button Shirt',
+        price: 45.99,
+        store: 'Everlane',
+        imageUrl: 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=400',
+        link: '#',
+        description: 'Timeless white cotton shirt perfect for any occasion',
+        colors: ['white', 'cream'],
+        styles: ['classic', 'minimalist', 'professional']
+      },
+      {
+        name: 'Soft Cashmere Sweater',
+        price: 89.99,
+        store: 'COS',
+        imageUrl: 'https://images.pexels.com/photos/7679720/pexels-photo-7679720.jpeg?auto=compress&cs=tinysrgb&w=400',
+        link: '#',
+        description: 'Luxurious cashmere sweater in neutral tones',
+        colors: ['beige', 'gray', 'cream'],
+        styles: ['minimalist', 'cozy', 'elegant']
+      },
+      {
+        name: 'Silk Blouse',
+        price: 65.00,
+        store: 'Zara',
+        imageUrl: 'https://images.pexels.com/photos/7679721/pexels-photo-7679721.jpeg?auto=compress&cs=tinysrgb&w=400',
+        link: '#',
+        description: 'Elegant silk blouse for professional settings',
+        colors: ['navy', 'black', 'white'],
+        styles: ['professional', 'elegant', 'classic']
+      }
+    ],
+    'Bottoms': [
+      {
+        name: 'High-Waisted Trousers',
+        price: 79.99,
+        store: 'Mango',
+        imageUrl: 'https://images.pexels.com/photos/7679722/pexels-photo-7679722.jpeg?auto=compress&cs=tinysrgb&w=400',
+        link: '#',
+        description: 'Tailored high-waisted trousers for a polished look',
+        colors: ['black', 'navy', 'gray'],
+        styles: ['professional', 'tailored', 'classic']
+      },
+      {
+        name: 'Wide-Leg Jeans',
+        price: 55.00,
+        store: 'H&M',
+        imageUrl: 'https://images.pexels.com/photos/7679723/pexels-photo-7679723.jpeg?auto=compress&cs=tinysrgb&w=400',
+        link: '#',
+        description: 'Comfortable wide-leg jeans in classic denim',
+        colors: ['blue', 'black', 'white'],
+        styles: ['casual', 'relaxed', 'modern']
+      },
+      {
+        name: 'Pleated Midi Skirt',
+        price: 42.99,
+        store: 'Uniqlo',
+        imageUrl: 'https://images.pexels.com/photos/7679724/pexels-photo-7679724.jpeg?auto=compress&cs=tinysrgb&w=400',
+        link: '#',
+        description: 'Versatile pleated skirt for work and weekend',
+        colors: ['navy', 'black', 'beige'],
+        styles: ['feminine', 'classic', 'versatile']
+      }
+    ],
+    'Outerwear': [
+      {
+        name: 'Wool Blend Coat',
+        price: 149.99,
+        store: 'COS',
+        imageUrl: 'https://images.pexels.com/photos/7679725/pexels-photo-7679725.jpeg?auto=compress&cs=tinysrgb&w=400',
+        link: '#',
+        description: 'Elegant wool coat for cold weather',
+        colors: ['camel', 'black', 'gray'],
+        styles: ['classic', 'elegant', 'timeless']
+      },
+      {
+        name: 'Denim Jacket',
+        price: 59.99,
+        store: 'Levi\'s',
+        imageUrl: 'https://images.pexels.com/photos/7679726/pexels-photo-7679726.jpeg?auto=compress&cs=tinysrgb&w=400',
+        link: '#',
+        description: 'Classic denim jacket for casual styling',
+        colors: ['blue', 'black', 'white'],
+        styles: ['casual', 'classic', 'versatile']
+      }
+    ],
+    'Shoes': [
+      {
+        name: 'Leather Ankle Boots',
+        price: 95.00,
+        store: 'Zara',
+        imageUrl: 'https://images.pexels.com/photos/7679727/pexels-photo-7679727.jpeg?auto=compress&cs=tinysrgb&w=400',
+        link: '#',
+        description: 'Versatile leather boots for any season',
+        colors: ['black', 'brown', 'tan'],
+        styles: ['classic', 'versatile', 'edgy']
+      },
+      {
+        name: 'White Sneakers',
+        price: 75.00,
+        store: 'Adidas',
+        imageUrl: 'https://images.pexels.com/photos/7679728/pexels-photo-7679728.jpeg?auto=compress&cs=tinysrgb&w=400',
+        link: '#',
+        description: 'Clean white sneakers for casual outfits',
+        colors: ['white', 'cream'],
+        styles: ['casual', 'sporty', 'minimalist']
+      }
+    ],
+    'Accessories': [
+      {
+        name: 'Leather Handbag',
+        price: 120.00,
+        store: 'Mango',
+        imageUrl: 'https://images.pexels.com/photos/7679729/pexels-photo-7679729.jpeg?auto=compress&cs=tinysrgb&w=400',
+        link: '#',
+        description: 'Structured leather handbag for everyday use',
+        colors: ['black', 'brown', 'tan'],
+        styles: ['classic', 'professional', 'elegant']
+      },
+      {
+        name: 'Silk Scarf',
+        price: 35.00,
+        store: 'H&M',
+        imageUrl: 'https://images.pexels.com/photos/7679730/pexels-photo-7679730.jpeg?auto=compress&cs=tinysrgb&w=400',
+        link: '#',
+        description: 'Elegant silk scarf to elevate any outfit',
+        colors: ['navy', 'cream', 'burgundy'],
+        styles: ['elegant', 'classic', 'feminine']
+      }
+    ]
   };
 
   // Cache for color analysis to improve performance
@@ -189,19 +335,77 @@ export class AIRecommendationEngine {
       const categoryItems = wardrobeItems.filter(item => item.category === category);
       const existingMatches = this.findExistingMatches(baseItem, categoryItems);
       
+      // Generate shopping suggestions for this category
+      const shoppingSuggestions = this.generateShoppingSuggestions(
+        category,
+        dominantColors,
+        complementaryColors,
+        style
+      );
+      
       const recommendation: RecommendedItem = {
         category,
         suggestedColors: this.getSuggestedColors(dominantColors, complementaryColors, category),
         suggestedStyles: this.getSuggestedStyles(style, category),
         compatibilityScore: this.calculateCategoryCompatibility(baseItem, category),
         reasoning: this.generateCategoryReasoning(baseItem, category, style),
-        existingMatches: existingMatches.slice(0, 3) // Top 3 matches
+        existingMatches: existingMatches.slice(0, 3), // Top 3 matches
+        shoppingSuggestions: shoppingSuggestions.slice(0, 3) // Top 3 shopping suggestions
       };
       
       recommendations.push(recommendation);
     }
     
     return recommendations;
+  }
+
+  private static generateShoppingSuggestions(
+    category: string,
+    dominantColors: string[],
+    complementaryColors: string[],
+    style: string
+  ): ShoppingSuggestion[] {
+    const categorySuggestions = this.shoppingSuggestions[category as keyof typeof this.shoppingSuggestions] || [];
+    
+    // Filter and score suggestions based on style and color compatibility
+    return categorySuggestions
+      .map(suggestion => ({
+        ...suggestion,
+        score: this.calculateShoppingSuggestionScore(suggestion, dominantColors, complementaryColors, style)
+      }))
+      .sort((a, b) => b.score - a.score)
+      .map(({ score, ...suggestion }) => suggestion);
+  }
+
+  private static calculateShoppingSuggestionScore(
+    suggestion: any,
+    dominantColors: string[],
+    complementaryColors: string[],
+    style: string
+  ): number {
+    let score = 0;
+    
+    // Color compatibility
+    const allRelevantColors = [...dominantColors, ...complementaryColors, 'white', 'black', 'gray'];
+    suggestion.colors.forEach((color: string) => {
+      if (allRelevantColors.some(relevantColor => 
+        color.toLowerCase().includes(relevantColor.toLowerCase()) ||
+        relevantColor.toLowerCase().includes(color.toLowerCase())
+      )) {
+        score += 2;
+      }
+    });
+    
+    // Style compatibility
+    const styleKeywords = style.toLowerCase();
+    suggestion.styles.forEach((suggestionStyle: string) => {
+      if (styleKeywords.includes(suggestionStyle.toLowerCase()) ||
+          suggestionStyle.toLowerCase().includes(styleKeywords)) {
+        score += 1.5;
+      }
+    });
+    
+    return score;
   }
 
   private static getTargetCategories(baseCategory: string): string[] {
@@ -338,41 +542,20 @@ export class AIRecommendationEngine {
     
     recommendations.recommendedItems.forEach(rec => {
       if (!rec.existingMatches || rec.existingMatches.length === 0) {
-        shoppingList.push({
-          category: rec.category,
-          suggestedColors: rec.suggestedColors,
-          suggestedStyles: rec.suggestedStyles,
-          priority: rec.compatibilityScore,
-          reasoning: `Add a ${rec.category.toLowerCase()} to complete outfits with your ${recommendations.baseItem.name}`,
-          estimatedPrice: this.estimatePrice(rec.category),
-          stores: this.suggestStores(rec.category, recommendations.style)
-        });
+        // Add shopping suggestions from the recommendation
+        if (rec.shoppingSuggestions) {
+          rec.shoppingSuggestions.forEach(suggestion => {
+            shoppingList.push({
+              ...suggestion,
+              category: rec.category,
+              priority: rec.compatibilityScore,
+              reasoning: `Perfect match for your ${recommendations.baseItem.name}`,
+            });
+          });
+        }
       }
     });
     
     return shoppingList.sort((a, b) => b.priority - a.priority);
-  }
-
-  private static estimatePrice(category: string): { min: number; max: number } {
-    const priceRanges = {
-      'Tops': { min: 25, max: 80 },
-      'Bottoms': { min: 40, max: 120 },
-      'Outerwear': { min: 60, max: 200 },
-      'Shoes': { min: 50, max: 150 },
-      'Accessories': { min: 15, max: 60 }
-    };
-    
-    return priceRanges[category as keyof typeof priceRanges] || { min: 20, max: 100 };
-  }
-
-  private static suggestStores(category: string, style: string): string[] {
-    const storeMap = {
-      'Minimalist': ['COS', 'Everlane', 'Uniqlo', 'Zara'],
-      'Bohemian': ['Free People', 'Anthropologie', 'Urban Outfitters'],
-      'Classic': ['J.Crew', 'Banana Republic', 'Brooks Brothers'],
-      'Edgy': ['AllSaints', 'Zara', 'H&M', 'ASOS']
-    };
-    
-    return storeMap[style as keyof typeof storeMap] || ['Zara', 'H&M', 'Uniqlo'];
   }
 }
