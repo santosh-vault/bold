@@ -98,58 +98,31 @@ ALTER TABLE wardrobe_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE outfits ENABLE ROW LEVEL SECURITY;
 ALTER TABLE outfit_items ENABLE ROW LEVEL SECURITY;
 
--- Create policies for profiles
+-- PROFILES
 CREATE POLICY "Users can view own profile" ON profiles
 FOR SELECT
 TO authenticated
-USING ((select auth.uid()) = user_id);
+USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can create profile" ON profiles
 FOR INSERT
 TO authenticated
-WITH CHECK (true);
+WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can update own profile" ON profiles
 FOR UPDATE
 TO authenticated
-USING ((select auth.uid()) = user_id)
-WITH CHECK (true);
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can delete own profile" ON profiles
 FOR DELETE
 TO authenticated
-USING ((select auth.uid()) = user_id);
-
-
--- Create policies for public.profiles
-CREATE POLICY "Users can select their own profile" 
-ON public.profiles 
-FOR SELECT 
-TO authenticated 
-USING ((select auth.uid()) = user_id);
-
-CREATE POLICY "Users can insert their own profile" 
-ON public.profiles 
-FOR INSERT 
-TO authenticated 
-WITH CHECK (true);
-
-CREATE POLICY "Users can update their own profile" 
-ON public.profiles 
-FOR UPDATE 
-TO authenticated 
-USING ((select auth.uid()) = user_id) 
-WITH CHECK ((select auth.uid()) = user_id);
-
-CREATE POLICY "Users can delete their own profile" 
-ON public.profiles 
-FOR DELETE 
-TO authenticated 
-USING ((select auth.uid()) = user_id);
+USING (auth.uid() = user_id);
 
 
 
--- Create policies for wardrobe_items
+-- WARDROBE ITEMS
 CREATE POLICY "Users can view own wardrobe items"
   ON wardrobe_items
   FOR SELECT
@@ -174,7 +147,9 @@ CREATE POLICY "Users can delete own wardrobe items"
   TO authenticated
   USING (auth.uid() = user_id);
 
--- Create policies for outfits
+
+
+-- OUTFITS
 CREATE POLICY "Users can view own outfits"
   ON outfits
   FOR SELECT
@@ -199,7 +174,9 @@ CREATE POLICY "Users can delete own outfits"
   TO authenticated
   USING (auth.uid() = user_id);
 
--- Create policies for outfit_items
+
+
+-- OUTFIT ITEMS
 CREATE POLICY "Users can view own outfit items"
   ON outfit_items
   FOR SELECT
@@ -235,6 +212,7 @@ CREATE POLICY "Users can delete own outfit items"
       AND outfits.user_id = auth.uid()
     )
   );
+
 
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_wardrobe_items_user_id ON wardrobe_items(user_id);
