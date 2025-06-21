@@ -99,24 +99,26 @@ ALTER TABLE outfits ENABLE ROW LEVEL SECURITY;
 ALTER TABLE outfit_items ENABLE ROW LEVEL SECURITY;
 
 -- Create policies for profiles
-CREATE POLICY "Users can view own profile"
-  ON profiles
-  FOR SELECT
-  TO authenticated
-  USING (id = (SELECT auth.uid()));
+CREATE POLICY "Users can view own profile" ON profiles
+FOR SELECT
+TO authenticated
+USING ((select auth.uid()) = user_id);
 
+CREATE POLICY "Users can create profile" ON profiles
+FOR INSERT
+TO authenticated
+WITH CHECK (true);
 
-CREATE POLICY "Users can update own profile"
-  ON profiles
-  FOR UPDATE
-  TO authenticated
-  USING (id = (SELECT auth.uid()));
+CREATE POLICY "Users can update own profile" ON profiles
+FOR UPDATE
+TO authenticated
+USING ((select auth.uid()) = user_id)
+WITH CHECK (true);
 
-CREATE POLICY "Users can insert own profile"
-  ON profiles
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (id = (SELECT auth.uid()));
+CREATE POLICY "Users can delete own profile" ON profiles
+FOR DELETE
+TO authenticated
+USING ((select auth.uid()) = user_id);
 
 -- Create policies for wardrobe_items
 CREATE POLICY "Users can view own wardrobe items"
