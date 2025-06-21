@@ -98,120 +98,132 @@ ALTER TABLE wardrobe_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE outfits ENABLE ROW LEVEL SECURITY;
 ALTER TABLE outfit_items ENABLE ROW LEVEL SECURITY;
 
+-- ==========================
+-- DROP OLD POLICIES
+-- ==========================
+
+-- PROFILES
+DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can create profile" ON profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can delete own profile" ON profiles;
+
+-- WARDROBE ITEMS
+DROP POLICY IF EXISTS "Users can view own wardrobe items" ON wardrobe_items;
+DROP POLICY IF EXISTS "Users can insert own wardrobe items" ON wardrobe_items;
+DROP POLICY IF EXISTS "Users can update own wardrobe items" ON wardrobe_items;
+DROP POLICY IF EXISTS "Users can delete own wardrobe items" ON wardrobe_items;
+
+-- OUTFITS
+DROP POLICY IF EXISTS "Users can view own outfits" ON outfits;
+DROP POLICY IF EXISTS "Users can insert own outfits" ON outfits;
+DROP POLICY IF EXISTS "Users can update own outfits" ON outfits;
+DROP POLICY IF EXISTS "Users can delete own outfits" ON outfits;
+
+-- OUTFIT ITEMS
+DROP POLICY IF EXISTS "Users can view own outfit items" ON outfit_items;
+DROP POLICY IF EXISTS "Users can insert own outfit items" ON outfit_items;
+DROP POLICY IF EXISTS "Users can delete own outfit items" ON outfit_items;
+
+
+-- ==========================
+-- CREATE OPTIMIZED POLICIES
+-- ==========================
+
 -- PROFILES
 CREATE POLICY "Users can view own profile" ON profiles
-FOR SELECT
-TO authenticated
+FOR SELECT TO authenticated
 USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can create profile" ON profiles
-FOR INSERT
-TO authenticated
+FOR INSERT TO authenticated
 WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can update own profile" ON profiles
-FOR UPDATE
-TO authenticated
+FOR UPDATE TO authenticated
 USING (auth.uid() = user_id)
 WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can delete own profile" ON profiles
-FOR DELETE
-TO authenticated
+FOR DELETE TO authenticated
 USING (auth.uid() = user_id);
 
 
-
 -- WARDROBE ITEMS
-CREATE POLICY "Users can view own wardrobe items"
-  ON wardrobe_items
-  FOR SELECT
-  TO authenticated
-  USING (auth.uid() = user_id);
+CREATE POLICY "Users can view own wardrobe items" ON wardrobe_items
+FOR SELECT TO authenticated
+USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can insert own wardrobe items"
-  ON wardrobe_items
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can insert own wardrobe items" ON wardrobe_items
+FOR INSERT TO authenticated
+WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can update own wardrobe items"
-  ON wardrobe_items
-  FOR UPDATE
-  TO authenticated
-  USING (auth.uid() = user_id);
+CREATE POLICY "Users can update own wardrobe items" ON wardrobe_items
+FOR UPDATE TO authenticated
+USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can delete own wardrobe items"
-  ON wardrobe_items
-  FOR DELETE
-  TO authenticated
-  USING (auth.uid() = user_id);
-
+CREATE POLICY "Users can delete own wardrobe items" ON wardrobe_items
+FOR DELETE TO authenticated
+USING (auth.uid() = user_id);
 
 
 -- OUTFITS
-CREATE POLICY "Users can view own outfits"
-  ON outfits
-  FOR SELECT
-  TO authenticated
-  USING (auth.uid() = user_id);
+CREATE POLICY "Users can view own outfits" ON outfits
+FOR SELECT TO authenticated
+USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can insert own outfits"
-  ON outfits
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can insert own outfits" ON outfits
+FOR INSERT TO authenticated
+WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can update own outfits"
-  ON outfits
-  FOR UPDATE
-  TO authenticated
-  USING (auth.uid() = user_id);
+CREATE POLICY "Users can update own outfits" ON outfits
+FOR UPDATE TO authenticated
+USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can delete own outfits"
-  ON outfits
-  FOR DELETE
-  TO authenticated
-  USING (auth.uid() = user_id);
-
+CREATE POLICY "Users can delete own outfits" ON outfits
+FOR DELETE TO authenticated
+USING (auth.uid() = user_id);
 
 
 -- OUTFIT ITEMS
-CREATE POLICY "Users can view own outfit items"
-  ON outfit_items
-  FOR SELECT
-  TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM outfits
-      WHERE outfits.id = outfit_items.outfit_id
-      AND outfits.user_id = auth.uid()
-    )
-  );
+CREATE POLICY "Users can view own outfit items" ON outfit_items
+FOR SELECT TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM outfits
+    WHERE outfits.id = outfit_items.outfit_id
+    AND outfits.user_id = auth.uid()
+  )
+);
 
-CREATE POLICY "Users can insert own outfit items"
-  ON outfit_items
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM outfits
-      WHERE outfits.id = outfit_items.outfit_id
-      AND outfits.user_id = auth.uid()
-    )
-  );
+CREATE POLICY "Users can insert own outfit items" ON outfit_items
+FOR INSERT TO authenticated
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM outfits
+    WHERE outfits.id = outfit_items.outfit_id
+    AND outfits.user_id = auth.uid()
+  )
+);
 
-CREATE POLICY "Users can delete own outfit items"
-  ON outfit_items
-  FOR DELETE
-  TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM outfits
-      WHERE outfits.id = outfit_items.outfit_id
-      AND outfits.user_id = auth.uid()
-    )
-  );
+CREATE POLICY "Users can delete own outfit items" ON outfit_items
+FOR DELETE TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM outfits
+    WHERE outfits.id = outfit_items.outfit_id
+    AND outfits.user_id = auth.uid()
+  )
+);
+
+
+-- ==========================
+-- OPTIONAL PERFORMANCE INDEX
+-- ==========================
+-- Improves performance of outfit_items subqueries
+
+CREATE INDEX IF NOT EXISTS outfits_id_user_id_idx ON outfits (id, user_id);
+CREATE INDEX IF NOT EXISTS outfit_items_outfit_id_idx ON outfit_items (outfit_id);
 
 
 -- Create indexes for better performance
