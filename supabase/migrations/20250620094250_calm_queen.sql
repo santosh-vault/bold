@@ -120,6 +120,35 @@ FOR DELETE
 TO authenticated
 USING ((select auth.uid()) = user_id);
 
+
+-- Create policies for public.profiles
+CREATE POLICY "Users can select their own profile" 
+ON public.profiles 
+FOR SELECT 
+TO authenticated 
+USING ((select auth.uid()) = user_id);
+
+CREATE POLICY "Users can insert their own profile" 
+ON public.profiles 
+FOR INSERT 
+TO authenticated 
+WITH CHECK (true);
+
+CREATE POLICY "Users can update their own profile" 
+ON public.profiles 
+FOR UPDATE 
+TO authenticated 
+USING ((select auth.uid()) = user_id) 
+WITH CHECK ((select auth.uid()) = user_id);
+
+CREATE POLICY "Users can delete their own profile" 
+ON public.profiles 
+FOR DELETE 
+TO authenticated 
+USING ((select auth.uid()) = user_id);
+
+
+
 -- Create policies for wardrobe_items
 CREATE POLICY "Users can view own wardrobe items"
   ON wardrobe_items
