@@ -48,7 +48,9 @@ export const useOutfits = () => {
 
       setOutfits(outfitsWithItems);
     } catch (err) {
+      console.error('Error fetching outfits:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
+      setOutfits([]);
     } finally {
       setLoading(false);
     }

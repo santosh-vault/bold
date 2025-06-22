@@ -14,11 +14,15 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     // Get initial session
     const getInitialSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         
+        if (!mounted) return;
+
         if (error) {
           console.error('Error getting session:', error);
           setUser(null);
@@ -34,8 +38,10 @@ export const useAuth = () => {
         }
       } catch (error) {
         console.error('Error in getInitialSession:', error);
-        setUser(null);
-        setLoading(false);
+        if (mounted) {
+          setUser(null);
+          setLoading(false);
+        }
       }
     };
 
@@ -44,6 +50,8 @@ export const useAuth = () => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!mounted) return;
+        
         console.log('Auth state changed:', event, session?.user?.id);
         
         if (session?.user) {
@@ -55,7 +63,10 @@ export const useAuth = () => {
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const fetchUserProfile = async (authUser: User) => {

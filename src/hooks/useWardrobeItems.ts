@@ -33,7 +33,9 @@ export const useWardrobeItems = () => {
 
       setItems(data || []);
     } catch (err) {
+      console.error('Error fetching wardrobe items:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
+      setItems([]);
     } finally {
       setLoading(false);
     }

@@ -105,21 +105,25 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   ];
 
-  // Calculate wardrobe stats
-  const wardrobeStats: WardrobeStats = {
-    totalItems: wardrobeHook.items.length,
-    totalValue: wardrobeHook.items.reduce((sum, item) => sum + (item.price || 0), 0),
-    mostWornItem: wardrobeHook.items.reduce((max, item) => 
-      item.wear_count > (max?.wear_count || 0) ? item : max, 
-      wardrobeHook.items[0] || null
-    ),
-    leastWornItems: wardrobeHook.items.filter(item => item.wear_count < 5),
-    categoryBreakdown: wardrobeHook.items.reduce((acc, item) => {
-      acc[item.category] = (acc[item.category] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>),
-    monthlySpending: 250.00 // This would be calculated from recent purchases
-  };
+  // Calculate wardrobe stats safely
+  const wardrobeStats: WardrobeStats = React.useMemo(() => {
+    const items = wardrobeHook.items || [];
+    
+    return {
+      totalItems: items.length,
+      totalValue: items.reduce((sum, item) => sum + (item.price || 0), 0),
+      mostWornItem: items.length > 0 ? items.reduce((max, item) => 
+        item.wear_count > (max?.wear_count || 0) ? item : max, 
+        items[0]
+      ) : null,
+      leastWornItems: items.filter(item => item.wear_count < 5),
+      categoryBreakdown: items.reduce((acc, item) => {
+        acc[item.category] = (acc[item.category] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>),
+      monthlySpending: 250.00 // This would be calculated from recent purchases
+    };
+  }, [wardrobeHook.items]);
 
   const value: AppContextType = {
     // Auth
@@ -131,7 +135,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     updateProfile: auth.updateProfile,
 
     // Wardrobe Items
-    wardrobeItems: wardrobeHook.items,
+    wardrobeItems: wardrobeHook.items || [],
     wardrobeLoading: wardrobeHook.loading,
     wardrobeError: wardrobeHook.error,
     addWardrobeItem: wardrobeHook.addItem,
@@ -140,7 +144,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     incrementWearCount: wardrobeHook.incrementWearCount,
 
     // Outfits
-    outfits: outfitsHook.outfits,
+    outfits: outfitsHook.outfits || [],
     outfitsLoading: outfitsHook.loading,
     outfitsError: outfitsHook.error,
     addOutfit: outfitsHook.addOutfit,
