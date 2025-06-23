@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Recommendations - StyleVault{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <!-- Header -->
+    <div class="mb-4">
+        <h1 class="h2 fw-bold text-dark d-flex align-items-center">
+            <i class="bi bi-stars text-primary me-3"></i>
+            AI Recommendations
+        </h1>
+        <p class="text-muted mb-0">Personalized style suggestions curated just for you</p>
+    </div>
+
+    <!-- AI Insights -->
+    <div class="card mb-5 bg-gradient-primary text-white">
+        <div class="card-body">
+            <div class="d-flex align-items-start">
+                <div class="recommendation-icon me-4">
+                    <i class="bi bi-stars display-4"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-3">AI Style Insights</h3>
+                    <p class="mb-3">
+                        Based on your wardrobe analysis, you prefer <strong>classic and versatile</strong> pieces. 
+                        Your style leans towards <strong>minimalist elegance</strong> with a preference for neutral colors.
+                    </p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="badge bg-white text-primary">Versatile Pieces</span>
+                        <span class="badge bg-white text-primary">Classic Styles</span>
+                        <span class="badge bg-white text-primary">Quality Investment</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommendations -->
+    {% if recommendations %}
+        <div class="row g-4">
+            {% for rec in recommendations %}
+                <div class="col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0 d-flex align-items-center">
+                                {% if rec.type == 'wear_more' %}
+                                    <i class="bi bi-arrow-up-circle text-warning me-2"></i>
+                                {% elif rec.type == 'category_gap' %}
+                                    <i class="bi bi-plus-circle text-success me-2"></i>
+                                {% else %}
+                                    <i class="bi bi-palette text-info me-2"></i>
+                                {% endif %}
+                                {{ rec.title }}
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted mb-4">{{ rec.description }}</p>
+                            
+                            {% if rec.type == 'wear_more' and rec.items %}
+                                <div class="recommendation-items">
+                                    {% for item in rec.items %}
+                                        <div class="rec-item d-flex align-items-center mb-3">
+                                            <img src="{{ item.image_url }}" alt="{{ item.name }}" 
+                                                 class="rec-item-image rounded me-3"
+                                                 onerror="this.src='https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=300'">
+                                            <div>
+                                                <h6 class="mb-1">{{ item.name }}</h6>
+                                                <p class="text-muted small mb-1">{{ item.category }} • {{ item.color }}</p>
+                                                <span class="badge bg-warning">{{ item.wear_count }} times</span>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% elif rec.type == 'category_gap' and rec.categories %}
+                                <div class="missing-categories">
+                                    {% for category in rec.categories %}
+                                        <span class="badge bg-success-subtle text-success me-2 mb-2">{{ category }}</span>
+                                    {% endfor %}
+                                </div>
+                                <div class="mt-3">
+                                    <a href="{% url 'wardrobe:wardrobe_add' %}" class="btn btn-success btn-sm">
+                                        <i class="bi bi-plus-circle me-1"></i>Add Items
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="empty-state text-center py-5">
+            <i class="bi bi-stars display-1 text-muted mb-4"></i>
+            <h3 class="fw-semibold mb-3">No recommendations available</h3>
+            <p class="text-muted mb-4">Add more items to your wardrobe to get personalized recommendations.</p>
+            <a href="{% url 'wardrobe:wardrobe_add' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Add Wardrobe Items
+            </a>
+        </div>
+    {% endif %}
+
+    <!-- Shopping Suggestions -->
+    <div class="card mt-5">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-bag-heart text-primary me-2"></i>
+                Shopping Suggestions
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="shopping-suggestion">
+                        <div class="suggestion-image">
+                            <img src="https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg?auto=compress&cs=tinysrgb&w=300" 
+                                 alt="Tailored Blazer" class="img-fluid rounded">
+                        </div>
+                        <div class="suggestion-content">
+                            <h6 class="fw-semibold">Tailored Blazer</h6>
+                            <p class="text-muted small">Perfect for professional looks</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold text-success">$120.00</span>
+                                <a href="#" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-external-link"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="shopping-suggestion">
+                        <div class="suggestion-image">
+                            <img src="https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=300" 
+                                 alt="Silk Blouse" class="img-fluid rounded">
+                        </div>
+                        <div class="suggestion-content">
+                            <h6 class="fw-semibold">Silk Blouse</h6>
+                            <p class="text-muted small">Versatile and elegant</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold text-success">$85.00</span>
+                                <a href="#" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-external-link"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="shopping-suggestion">
+                        <div class="suggestion-image">
+                            <img src="https://images.pexels.com/photos/1488463/pexels-photo-1488463.jpeg?auto=compress&cs=tinysrgb&w=300" 
+                                 alt="Classic Trousers" class="img-fluid rounded">
+                        </div>
+                        <div class="suggestion-content">
+                            <h6 class="fw-semibold">Classic Trousers</h6>
+                            <p class="text-muted small">Essential wardrobe staple</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold text-success">$95.00</span>
+                                <a href="#" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-external-link"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #6f42c1 0%, #007bff 100%);
+}
+
+.rec-item-image {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+}
+
+.shopping-suggestion {
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.shopping-suggestion:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.suggestion-image {
+    aspect-ratio: 1;
+    overflow: hidden;
+}
+
+.suggestion-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.suggestion-content {
+    padding: 1rem;
+}
+</style>
+{% endblock %}

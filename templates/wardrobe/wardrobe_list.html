@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Wardrobe - StyleVault{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 fw-bold text-dark">My Wardrobe</h1>
+            <p class="text-muted mb-0">Manage and organize your clothing collection</p>
+        </div>
+        <a href="{% url 'wardrobe:wardrobe_add' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Add Item
+        </a>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    {{ form.search }}
+                </div>
+                <div class="col-md-2">
+                    {{ form.category }}
+                </div>
+                <div class="col-md-2">
+                    {{ form.color }}
+                </div>
+                <div class="col-md-2">
+                    {{ form.brand }}
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-search me-1"></i>Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Items Grid -->
+    {% if items %}
+        <div class="row g-4 mb-4">
+            {% for item in items %}
+                <div class="col-sm-6 col-md-4 col-lg-3">
+                    <div class="wardrobe-item-card">
+                        <div class="item-image">
+                            <img src="{{ item.image_url }}" alt="{{ item.name }}"
+                                 onerror="this.src='https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=300'">
+                        </div>
+                        <div class="item-content">
+                            <h6 class="item-title">{{ item.name }}</h6>
+                            <p class="item-details">{{ item.category }} • {{ item.color }}</p>
+                            {% if item.brand %}
+                                <p class="item-brand">{{ item.brand }}</p>
+                            {% endif %}
+                            {% if item.price %}
+                                <p class="item-price">${{ item.price }}</p>
+                            {% endif %}
+                            <p class="item-wear-count">Worn {{ item.wear_count }} times</p>
+                            
+                            <div class="item-tags">
+                                {% for tag in item.tags %}
+                                    <span class="badge bg-primary-subtle text-primary">{{ tag }}</span>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="item-actions">
+                                <button class="btn btn-sm btn-outline-success wear-btn" 
+                                        data-item-id="{{ item.id }}" title="Mark as worn">
+                                    <i class="bi bi-check-circle"></i>
+                                </button>
+                                <a href="{% url 'wardrobe:wardrobe_edit' item.pk %}" 
+                                   class="btn btn-sm btn-outline-primary" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'wardrobe:wardrobe_delete' item.pk %}" 
+                                   class="btn btn-sm btn-outline-danger" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Wardrobe pagination">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">Previous</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <!-- Empty State -->
+        <div class="empty-state text-center py-5">
+            <i class="bi bi-bag-heart display-1 text-muted mb-4"></i>
+            <h3 class="fw-semibold mb-3">No items found</h3>
+            <p class="text-muted mb-4">
+                {% if request.GET.search or request.GET.category %}
+                    Try adjusting your search or filters.
+                {% else %}
+                    Start building your wardrobe by adding your first item.
+                {% endif %}
+            </p>
+            <a href="{% url 'wardrobe:wardrobe_add' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Add Your First Item
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle wear count increment
+    document.querySelectorAll('.wear-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const itemId = this.dataset.itemId;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            fetch(`/wardrobe/${itemId}/wear/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update wear count display
+                    const wearCountElement = this.closest('.wardrobe-item-card').querySelector('.item-wear-count');
+                    wearCountElement.textContent = `Worn ${data.new_count} times`;
+                    
+                    // Show success feedback
+                    this.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
+                    this.classList.remove('btn-outline-success');
+                    this.classList.add('btn-success');
+                    
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="bi bi-check-circle"></i>';
+                        this.classList.remove('btn-success');
+                        this.classList.add('btn-outline-success');
+                    }, 1000);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

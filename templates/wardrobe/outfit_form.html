@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }} - StyleVault{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">{{ title }}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                {{ form.name|as_crispy_field }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.occasion|as_crispy_field }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.season|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            {{ form.rating|as_crispy_field }}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Select Items for Outfit</label>
+                            <p class="text-muted small">Choose items from your wardrobe to create this outfit.</p>
+                            
+                            {% if form.items.field.queryset %}
+                                <div class="outfit-items-selection">
+                                    <div class="row g-3">
+                                        {% for item in form.items.field.queryset %}
+                                            <div class="col-sm-6 col-md-4 col-lg-3">
+                                                <div class="item-selection-card">
+                                                    <input type="checkbox" name="items" value="{{ item.id }}" 
+                                                           id="item_{{ item.id }}" class="item-checkbox">
+                                                    <label for="item_{{ item.id }}" class="item-label">
+                                                        <div class="item-image">
+                                                            <img src="{{ item.image_url }}" alt="{{ item.name }}"
+                                                                 onerror="this.src='https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=300'">
+                                                        </div>
+                                                        <div class="item-info">
+                                                            <h6 class="item-name">{{ item.name }}</h6>
+                                                            <p class="item-category">{{ item.category }}</p>
+                                                        </div>
+                                                        <div class="item-check">
+                                                            <i class="bi bi-check-circle-fill"></i>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    No wardrobe items found. <a href="{% url 'wardrobe:wardrobe_add' %}">Add some items</a> to your wardrobe first.
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'wardrobe:outfit_list' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-2"></i>Create Outfit
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.outfit-items-selection {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 1rem;
+}
+
+.item-selection-card {
+    position: relative;
+}
+
+.item-checkbox {
+    display: none;
+}
+
+.item-label {
+    display: block;
+    cursor: pointer;
+    border: 2px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.item-label:hover {
+    border-color: #6f42c1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.item-checkbox:checked + .item-label {
+    border-color: #6f42c1;
+    background-color: #f8f9ff;
+}
+
+.item-image {
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 0.375rem;
+    margin-bottom: 0.5rem;
+}
+
+.item-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.item-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: #212529;
+}
+
+.item-category {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-bottom: 0;
+}
+
+.item-check {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    color: #6f42c1;
+    font-size: 1.25rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.item-checkbox:checked + .item-label .item-check {
+    opacity: 1;
+}
+</style>
+{% endblock %}

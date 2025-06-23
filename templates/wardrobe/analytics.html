@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+
+{% block title %}Analytics - StyleVault{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <!-- Header -->
+    <div class="mb-4">
+        <h1 class="h2 fw-bold text-dark">Wardrobe Analytics</h1>
+        <p class="text-muted mb-0">Insights into your style patterns and wardrobe composition</p>
+    </div>
+
+    <!-- Overview Stats -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="stat-card bg-primary">
+                <div class="stat-icon">
+                    <i class="bi bi-bag-heart"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number">{{ total_items }}</h3>
+                    <p class="stat-label">Total Items</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card bg-success">
+                <div class="stat-icon">
+                    <i class="bi bi-palette"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number">{{ total_outfits }}</h3>
+                    <p class="stat-label">Total Outfits</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card bg-info">
+                <div class="stat-icon">
+                    <i class="bi bi-tags"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number">{{ category_data|length }}</h3>
+                    <p class="stat-label">Categories</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card bg-warning">
+                <div class="stat-icon">
+                    <i class="bi bi-award"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number">{{ brand_data|length }}</h3>
+                    <p class="stat-label">Brands</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4 mb-5">
+        <!-- Category Analysis -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Category Distribution</h5>
+                </div>
+                <div class="card-body">
+                    {% if category_data %}
+                        {% for category in category_data %}
+                            <div class="analytics-item mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-medium">{{ category.category }}</span>
+                                    <span class="text-muted">{{ category.count }} items</span>
+                                </div>
+                                <div class="progress mb-1">
+                                    <div class="progress-bar bg-primary" 
+                                         style="width: {% widthratio category.count total_items 100 %}%"></div>
+                                </div>
+                                <div class="d-flex justify-content-between text-muted small">
+                                    <span>Value: ${{ category.total_value|default:0|floatformat:0 }}</span>
+                                    <span>Avg. Wear: {{ category.avg_wear|default:0|floatformat:1 }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-4">No data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Color Analysis -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Top Colors</h5>
+                </div>
+                <div class="card-body">
+                    {% if color_data %}
+                        {% for color in color_data %}
+                            <div class="color-item d-flex align-items-center justify-content-between mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="color-swatch me-3" 
+                                         style="background-color: {{ color.color|lower }}; width: 24px; height: 24px; border-radius: 50%; border: 1px solid #dee2e6;"></div>
+                                    <span class="fw-medium text-capitalize">{{ color.color }}</span>
+                                </div>
+                                <span class="text-muted">{{ color.count }} items</span>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-4">No color data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Brand Analysis -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Top Brands</h5>
+                </div>
+                <div class="card-body">
+                    {% if brand_data %}
+                        {% for brand in brand_data %}
+                            <div class="brand-item d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <span class="fw-medium">{{ brand.brand }}</span>
+                                    <div class="text-muted small">{{ brand.count }} items</div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="fw-medium text-success">${{ brand.total_value|default:0|floatformat:0 }}</div>
+                                    <div class="text-muted small">Total Value</div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-4">No brand data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Price Analysis -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Price Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <div class="price-range-item mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Under $50</span>
+                            <span>{{ price_ranges.under_50 }} items</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" 
+                                 style="width: {% if total_items %}{% widthratio price_ranges.under_50 total_items 100 %}{% else %}0{% endif %}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="price-range-item mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>$50 - $100</span>
+                            <span>{{ price_ranges.50_to_100 }} items</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-info" 
+                                 style="width: {% if total_items %}{% widthratio price_ranges.50_to_100 total_items 100 %}{% else %}0{% endif %}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="price-range-item mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>$100 - $200</span>
+                            <span>{{ price_ranges.100_to_200 }} items</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" 
+                                 style="width: {% if total_items %}{% widthratio price_ranges.100_to_200 total_items 100 %}{% else %}0{% endif %}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="price-range-item mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Over $200</span>
+                            <span>{{ price_ranges.over_200 }} items</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-danger" 
+                                 style="width: {% if total_items %}{% widthratio price_ranges.over_200 total_items 100 %}{% else %}0{% endif %}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wear Patterns -->
+    <div class="row g-4">
+        <!-- Most Worn Items -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Most Worn Items</h5>
+                </div>
+                <div class="card-body">
+                    {% if most_worn %}
+                        {% for item in most_worn %}
+                            <div class="worn-item d-flex align-items-center mb-3">
+                                <img src="{{ item.image_url }}" alt="{{ item.name }}" 
+                                     class="worn-item-image rounded me-3"
+                                     onerror="this.src='https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=300'">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">{{ item.name }}</h6>
+                                    <p class="text-muted small mb-1">{{ item.category }} • {{ item.color }}</p>
+                                    <span class="badge bg-primary">{{ item.wear_count }} times</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-4">No wear data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Least Worn Items -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Items to Wear More</h5>
+                </div>
+                <div class="card-body">
+                    {% if least_worn %}
+                        {% for item in least_worn|slice:":10" %}
+                            <div class="worn-item d-flex align-items-center mb-3">
+                                <img src="{{ item.image_url }}" alt="{{ item.name }}" 
+                                     class="worn-item-image rounded me-3"
+                                     onerror="this.src='https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=300'">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">{{ item.name }}</h6>
+                                    <p class="text-muted small mb-1">{{ item.category }} • {{ item.color }}</p>
+                                    <span class="badge bg-warning">{{ item.wear_count }} times</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-4">All items are well-worn!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

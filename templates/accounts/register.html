@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Create Account - StyleVault{% endblock %}
+
+{% block body_class %}auth-page{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="row min-vh-100 g-0">
+        <!-- Left side - Image -->
+        <div class="col-lg-6 d-none d-lg-block">
+            <div class="auth-image">
+                <img src="https://images.pexels.com/photos/1488463/pexels-photo-1488463.jpeg?auto=compress&cs=tinysrgb&w=800" 
+                     alt="Fashion collection" class="img-fluid h-100 w-100 object-fit-cover">
+                <div class="auth-image-overlay"></div>
+            </div>
+        </div>
+
+        <!-- Right side - Form -->
+        <div class="col-lg-6 d-flex align-items-center justify-content-center">
+            <div class="auth-form-container">
+                <div class="text-center mb-4">
+                    <a href="{% url 'wardrobe:landing' %}" class="auth-brand">
+                        <i class="bi bi-bag-heart-fill text-primary fs-1"></i>
+                        <h2 class="fw-bold mt-2">StyleVault</h2>
+                    </a>
+                    <h3 class="fw-bold mt-4 mb-2">Create your account</h3>
+                    <p class="text-muted">
+                        Already have an account? 
+                        <a href="{% url 'accounts:login' %}" class="text-primary text-decoration-none">Sign in</a>
+                    </p>
+                </div>
+
+                <form method="post" class="auth-form">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="terms" required>
+                        <label class="form-check-label" for="terms">
+                            I agree to the 
+                            <a href="#" class="text-primary text-decoration-none">Terms of Service</a> 
+                            and 
+                            <a href="#" class="text-primary text-decoration-none">Privacy Policy</a>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3">
+                        Create Account
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

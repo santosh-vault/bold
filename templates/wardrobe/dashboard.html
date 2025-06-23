@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - StyleVault{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 fw-bold text-dark">Dashboard</h1>
+            <p class="text-muted mb-0">Welcome back! Here's your style overview.</p>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-6 col-lg-3">
+            <div class="stat-card bg-primary">
+                <div class="stat-icon">
+                    <i class="bi bi-bag-heart"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number">{{ stats.total_items }}</h3>
+                    <p class="stat-label">Total Items</p>
+                    <small class="stat-change">+2 this week</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="stat-card bg-success">
+                <div class="stat-icon">
+                    <i class="bi bi-currency-dollar"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number">${{ stats.total_value|floatformat:0 }}</h3>
+                    <p class="stat-label">Wardrobe Value</p>
+                    <small class="stat-change">+$89 this month</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="stat-card bg-info">
+                <div class="stat-icon">
+                    <i class="bi bi-palette"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number">{{ stats.total_outfits }}</h3>
+                    <p class="stat-label">Outfits Created</p>
+                    <small class="stat-change">+1 this week</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="stat-card bg-warning">
+                <div class="stat-icon">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number">{{ stats.avg_wear_count|floatformat:1 }}</h3>
+                    <p class="stat-label">Avg. Wear Count</p>
+                    <small class="stat-change">Great usage!</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Data -->
+    <div class="row g-4 mb-5">
+        <!-- Category Breakdown -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Category Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    {% if category_stats %}
+                        <div class="category-chart">
+                            {% for category in category_stats %}
+                                <div class="category-item d-flex align-items-center justify-content-between mb-3">
+                                    <span class="fw-medium">{{ category.category }}</span>
+                                    <div class="d-flex align-items-center">
+                                        <div class="progress me-3" style="width: 120px;">
+                                            <div class="progress-bar bg-primary" 
+                                                 style="width: {% widthratio category.count stats.total_items 100 %}%"></div>
+                                        </div>
+                                        <span class="text-muted">{{ category.count }}</span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-4">No items in your wardrobe yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    <div class="activity-list">
+                        {% for item in recent_items %}
+                            <div class="activity-item d-flex align-items-center mb-3">
+                                <div class="activity-icon bg-primary-subtle text-primary rounded-circle me-3">
+                                    <i class="bi bi-bag-heart"></i>
+                                </div>
+                                <div>
+                                    <p class="mb-1 fw-medium">Added "{{ item.name }}"</p>
+                                    <small class="text-muted">{{ item.created_at|date:"M d, Y" }}</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        
+                        {% for outfit in recent_outfits %}
+                            <div class="activity-item d-flex align-items-center mb-3">
+                                <div class="activity-icon bg-success-subtle text-success rounded-circle me-3">
+                                    <i class="bi bi-palette"></i>
+                                </div>
+                                <div>
+                                    <p class="mb-1 fw-medium">Created "{{ outfit.name }}" outfit</p>
+                                    <small class="text-muted">{{ outfit.created_at|date:"M d, Y" }}</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        
+                        {% if not recent_items and not recent_outfits %}
+                            <p class="text-muted text-center py-4">No recent activity.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Most and Least Worn Items -->
+    <div class="row g-4">
+        <!-- Most Worn Item -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Most Worn Items</h5>
+                </div>
+                <div class="card-body">
+                    {% if most_worn %}
+                        {% for item in most_worn %}
+                            <div class="worn-item d-flex align-items-center mb-3">
+                                <img src="{{ item.image_url }}" alt="{{ item.name }}" 
+                                     class="worn-item-image rounded me-3"
+                                     onerror="this.src='https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=300'">
+                                <div class="flex-grow-1">
+                                    <p class="mb-1 fw-medium">{{ item.name }}</p>
+                                    <small class="text-muted">{{ item.category }}</small>
+                                    <div class="mt-1">
+                                        <span class="badge bg-primary">{{ item.wear_count }} times</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-4">No items worn yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Items to Wear More -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Items to Wear More</h5>
+                </div>
+                <div class="card-body">
+                    {% if least_worn %}
+                        {% for item in least_worn %}
+                            <div class="worn-item d-flex align-items-center mb-3">
+                                <img src="{{ item.image_url }}" alt="{{ item.name }}" 
+                                     class="worn-item-image rounded me-3"
+                                     onerror="this.src='https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=300'">
+                                <div class="flex-grow-1">
+                                    <p class="mb-1 fw-medium">{{ item.name }}</p>
+                                    <small class="text-muted">{{ item.category }}</small>
+                                    <div class="mt-1">
+                                        <span class="badge bg-warning">{{ item.wear_count }} times</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-4">All items are well-worn!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
