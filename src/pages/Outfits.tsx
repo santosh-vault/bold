@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Star, Calendar, Eye, AlertCircle, BarChart3, Trash2 } from 'lucide-react';
+import { Plus, Star, Calendar, Eye, AlertCircle, BarChart3, Trash2, Search, Filter } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useApp } from '../contexts/AppContext';
@@ -13,9 +13,12 @@ const Outfits: React.FC = () => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [itemSearchTerm, setItemSearchTerm] = useState('');
+  const [selectedItemCategory, setSelectedItemCategory] = useState('All');
 
   const occasions = ['Casual', 'Work', 'Formal', 'Party', 'Date', 'Travel', 'Exercise'];
   const seasons = ['All seasons', 'Spring', 'Summer', 'Fall', 'Winter'];
+  const categories = ['All', 'Tops', 'Bottoms', 'Outerwear', 'Shoes', 'Accessories'];
 
   const {
     register,
@@ -27,6 +30,15 @@ const Outfits: React.FC = () => {
     defaultValues: {
       season: 'All seasons',
     },
+  });
+
+  // Filter wardrobe items for selection
+  const filteredWardrobeItems = wardrobeItems.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(itemSearchTerm.toLowerCase()) ||
+                         item.brand?.toLowerCase().includes(itemSearchTerm.toLowerCase()) ||
+                         item.color.toLowerCase().includes(itemSearchTerm.toLowerCase());
+    const matchesCategory = selectedItemCategory === 'All' || item.category === selectedItemCategory;
+    return matchesSearch && matchesCategory;
   });
 
   const onSubmit = async (data: OutfitFormData) => {
@@ -47,6 +59,8 @@ const Outfits: React.FC = () => {
       reset();
       setSelectedItems([]);
       setShowCreateModal(false);
+      setItemSearchTerm('');
+      setSelectedItemCategory('All');
     } catch (err: any) {
       setError(err.message || 'Failed to create outfit');
     } finally {
@@ -190,21 +204,22 @@ const Outfits: React.FC = () => {
       {/* Create Outfit Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+          <div className="bg-white rounded-xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-900">Create New Outfit</h2>
             </div>
             
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm flex items-center mb-4">
-                  <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
-                  {error}
-                </div>
-              )}
+            <div className="flex h-[calc(90vh-120px)]">
+              {/* Left Panel - Outfit Details */}
+              <div className="w-1/3 p-6 border-r border-gray-200 overflow-y-auto">
+                {error && (
+                  <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm flex items-center mb-4">
+                    <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+                    {error}
+                  </div>
+                )}
 
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Outfit Name
@@ -255,81 +270,186 @@ const Outfits: React.FC = () => {
                       ))}
                     </select>
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Select Items ({selectedItems.length} selected)
-                  </label>
-                  
-                  {wardrobeItems.length === 0 ? (
-                    <div className="text-center py-8 bg-gray-50 rounded-lg">
-                      <p className="text-gray-600">No wardrobe items found. Add some items to your wardrobe first.</p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                      {wardrobeItems.map((item) => {
-                        const isSelected = selectedItems.includes(item.id);
-                        return (
-                          <div
-                            key={item.id}
-                            className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all ${
-                              isSelected ? 'border-purple-500 ring-2 ring-purple-200' : 'border-gray-200 hover:border-gray-300'
-                            }`}
-                            onClick={() => toggleItemSelection(item.id)}
-                          >
-                            <div className="aspect-square">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Rating (Optional)
+                    </label>
+                    <select
+                      {...register('rating', { valueAsNumber: true })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="">No rating</option>
+                      {[1, 2, 3, 4, 5].map(rating => (
+                        <option key={rating} value={rating}>
+                          {'★'.repeat(rating)} ({rating} star{rating !== 1 ? 's' : ''})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Selected Items Preview */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Selected Items ({selectedItems.length})
+                    </label>
+                    {selectedItems.length > 0 ? (
+                      <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
+                        {selectedItems.map(itemId => {
+                          const item = wardrobeItems.find(i => i.id === itemId);
+                          if (!item) return null;
+                          return (
+                            <div key={itemId} className="relative group">
                               <img
                                 src={item.image_url}
                                 alt={item.name}
-                                className="w-full h-full object-cover"
+                                className="w-full aspect-square object-cover rounded"
                                 onError={(e) => {
                                   e.currentTarget.src = 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=300';
                                 }}
                               />
+                              <button
+                                type="button"
+                                onClick={() => toggleItemSelection(itemId)}
+                                className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                ×
+                              </button>
+                              <p className="text-xs text-gray-600 mt-1 truncate">{item.name}</p>
                             </div>
-                            <div className="p-2">
-                              <p className="text-xs font-medium text-gray-900 truncate">{item.name}</p>
-                              <p className="text-xs text-gray-500">{item.category}</p>
-                            </div>
-                            {isSelected && (
-                              <div className="absolute top-2 right-2 w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center">
-                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic">No items selected</p>
+                    )}
+                    {errors.items && (
+                      <p className="mt-2 text-sm text-red-600">{errors.items.message}</p>
+                    )}
+                  </div>
+
+                  <div className="flex space-x-3 pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setShowCreateModal(false);
+                        reset();
+                        setSelectedItems([]);
+                        setError('');
+                        setItemSearchTerm('');
+                        setSelectedItemCategory('All');
+                      }}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={loading || selectedItems.length === 0}
+                      className="flex-1"
+                    >
+                      {loading ? 'Creating...' : 'Create Outfit'}
+                    </Button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Right Panel - Item Selection */}
+              <div className="flex-1 p-6 overflow-y-auto">
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Select Items for Your Outfit</h3>
+                  
+                  {/* Search and Filter for Items */}
+                  <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <input
+                        type="text"
+                        placeholder="Search wardrobe items..."
+                        value={itemSearchTerm}
+                        onChange={(e) => setItemSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
                     </div>
-                  )}
-                  {errors.items && (
-                    <p className="mt-2 text-sm text-red-600">{errors.items.message}</p>
-                  )}
+                    <div className="flex items-center space-x-2">
+                      <Filter className="w-4 h-4 text-gray-400" />
+                      <select
+                        value={selectedItemCategory}
+                        onChange={(e) => setSelectedItemCategory(e.target.value)}
+                        className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      >
+                        {categories.map(category => (
+                          <option key={category} value={category}>{category}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setShowCreateModal(false);
-                      reset();
-                      setSelectedItems([]);
-                      setError('');
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={loading || selectedItems.length === 0}
-                  >
-                    {loading ? 'Creating...' : 'Create Outfit'}
-                  </Button>
-                </div>
-              </form>
+                {wardrobeItems.length === 0 ? (
+                  <div className="text-center py-8 bg-gray-50 rounded-lg">
+                    <p className="text-gray-600">No wardrobe items found. Add some items to your wardrobe first.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+                    {filteredWardrobeItems.map((item) => {
+                      const isSelected = selectedItems.includes(item.id);
+                      return (
+                        <div
+                          key={item.id}
+                          className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all hover:shadow-md ${
+                            isSelected ? 'border-purple-500 ring-2 ring-purple-200 shadow-lg' : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                          onClick={() => toggleItemSelection(item.id)}
+                        >
+                          <div className="aspect-square">
+                            <img
+                              src={item.image_url}
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.src = 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=300';
+                              }}
+                            />
+                          </div>
+                          <div className="p-2">
+                            <p className="text-xs font-medium text-gray-900 truncate">{item.name}</p>
+                            <p className="text-xs text-gray-500">{item.category}</p>
+                            <p className="text-xs text-gray-400">{item.color}</p>
+                            {item.brand && (
+                              <p className="text-xs text-gray-400 truncate">{item.brand}</p>
+                            )}
+                          </div>
+                          {isSelected && (
+                            <div className="absolute top-2 right-2 w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                              <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {filteredWardrobeItems.length === 0 && wardrobeItems.length > 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-gray-600">No items match your search criteria.</p>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setItemSearchTerm('');
+                        setSelectedItemCategory('All');
+                      }}
+                      className="mt-2"
+                    >
+                      Clear Filters
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

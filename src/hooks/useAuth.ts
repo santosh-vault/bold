@@ -16,9 +16,6 @@ export const useAuth = () => {
   const profileCache = useRef<Map<string, Profile>>(new Map());
 
   useEffect(() => {
-    // Prevent double initialization in React Strict Mode
-    if (initialized.current) return;
-    initialized.current = true;
 
     let mounted = true;
 
@@ -27,6 +24,8 @@ export const useAuth = () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         
+        if (!mounted) return;
+
         if (error) {
           console.error('Error getting session:', error);
           if (mounted) {
@@ -57,8 +56,7 @@ export const useAuth = () => {
     let authTimeout: NodeJS.Timeout;
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        // Clear any pending auth updates
-        if (authTimeout) clearTimeout(authTimeout);
+
         
         // Debounce auth state changes to prevent rapid updates
         authTimeout = setTimeout(async () => {
@@ -76,8 +74,7 @@ export const useAuth = () => {
       }
     );
 
-    const fetchUserProfile = async (authUser: User) => {
-      if (!mounted) return;
+
       
       try {
         setLoading(true);
