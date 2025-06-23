@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}StyleVault - Transform Your Wardrobe{% endblock %}
+
+{% block body_class %}landing-page{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<header class="landing-header">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'wardrobe:landing' %}">
+                <i class="bi bi-bag-heart-fill text-primary fs-2 me-2"></i>
+                <span class="fw-bold fs-3">StyleVault</span>
+            </a>
+            
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link me-3" href="{% url 'accounts:login' %}">Sign In</a>
+                <a class="btn btn-primary" href="{% url 'accounts:register' %}">Get Started</a>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center min-vh-100">
+            <div class="col-lg-6">
+                <h1 class="display-3 fw-bold mb-4">
+                    Your Personal
+                    <span class="text-gradient">Style Assistant</span>
+                </h1>
+                <p class="lead mb-5">
+                    Transform your wardrobe into a smart, organized collection. Create stunning outfits, 
+                    track your style journey, and discover new looks with AI-powered recommendations.
+                </p>
+                <div class="d-flex flex-column flex-sm-row gap-3">
+                    <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg px-4">
+                        Start Your Style Journey
+                    </a>
+                    <button class="btn btn-outline-primary btn-lg px-4">
+                        Watch Demo
+                    </button>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="hero-image">
+                    <img src="https://images.pexels.com/photos/1926769/pexels-photo-1926769.jpeg?auto=compress&cs=tinysrgb&w=800" 
+                         alt="Stylish wardrobe" class="img-fluid rounded-4 shadow-lg">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-4">Everything You Need for Style Success</h2>
+            <p class="lead">Powerful features designed to revolutionize how you manage and style your wardrobe.</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-bag-heart text-primary"></i>
+                    </div>
+                    <h4 class="fw-semibold mb-3">Smart Wardrobe Management</h4>
+                    <p class="text-muted">Organize your clothes with intelligent categorization and tracking.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-bar-chart text-primary"></i>
+                    </div>
+                    <h4 class="fw-semibold mb-3">Outfit Analytics</h4>
+                    <p class="text-muted">Get insights on your style preferences and wearing patterns.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-stars text-primary"></i>
+                    </div>
+                    <h4 class="fw-semibold mb-3">AI Style Recommendations</h4>
+                    <p class="text-muted">Discover new outfits curated by AI based on your taste and trends.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-lightning text-primary"></i>
+                    </div>
+                    <h4 class="fw-semibold mb-3">Quick Outfit Creation</h4>
+                    <p class="text-muted">Mix and match your wardrobe items to create perfect outfits.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-shield-check text-primary"></i>
+                    </div>
+                    <h4 class="fw-semibold mb-3">Secure & Private</h4>
+                    <p class="text-muted">Your style data is encrypted and never shared without permission.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-people text-primary"></i>
+                    </div>
+                    <h4 class="fw-semibold mb-3">Style Community</h4>
+                    <p class="text-muted">Connect with fashion enthusiasts and share style inspiration.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section py-5 bg-primary text-white">
+    <div class="container text-center">
+        <h2 class="display-5 fw-bold mb-4">Ready to Transform Your Style?</h2>
+        <p class="lead mb-4">Join thousands of users who have already revolutionized their wardrobe management.</p>
+        <a href="{% url 'accounts:register' %}" class="btn btn-light btn-lg px-5">
+            Get Started Free
+        </a>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-dark text-white py-4">
+    <div class="container text-center">
+        <div class="d-flex align-items-center justify-content-center mb-3">
+            <i class="bi bi-bag-heart-fill text-primary fs-3 me-2"></i>
+            <span class="fw-bold fs-4">StyleVault</span>
+        </div>
+        <p class="text-muted mb-0">&copy; 2024 StyleVault. All rights reserved.</p>
+    </div>
+</footer>
+{% endblock %}

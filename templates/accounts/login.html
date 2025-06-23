@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Sign In - StyleVault{% endblock %}
+
+{% block body_class %}auth-page{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="row min-vh-100 g-0">
+        <!-- Left side - Form -->
+        <div class="col-lg-6 d-flex align-items-center justify-content-center">
+            <div class="auth-form-container">
+                <div class="text-center mb-4">
+                    <a href="{% url 'wardrobe:landing' %}" class="auth-brand">
+                        <i class="bi bi-bag-heart-fill text-primary fs-1"></i>
+                        <h2 class="fw-bold mt-2">StyleVault</h2>
+                    </a>
+                    <h3 class="fw-bold mt-4 mb-2">Welcome back</h3>
+                    <p class="text-muted">
+                        Don't have an account? 
+                        <a href="{% url 'accounts:register' %}" class="text-primary text-decoration-none">Sign up</a>
+                    </p>
+                </div>
+
+                <form method="post" class="auth-form">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="remember">
+                            <label class="form-check-label" for="remember">
+                                Remember me
+                            </label>
+                        </div>
+                        <a href="#" class="text-primary text-decoration-none">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3">
+                        Sign In
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right side - Image -->
+        <div class="col-lg-6 d-none d-lg-block">
+            <div class="auth-image">
+                <img src="https://images.pexels.com/photos/1926769/pexels-photo-1926769.jpeg?auto=compress&cs=tinysrgb&w=800" 
+                     alt="Fashion styling" class="img-fluid h-100 w-100 object-fit-cover">
+                <div class="auth-image-overlay"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

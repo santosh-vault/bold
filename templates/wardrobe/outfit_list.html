@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Outfits - StyleVault{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 fw-bold text-dark">My Outfits</h1>
+            <p class="text-muted mb-0">Create and manage your outfit combinations</p>
+        </div>
+        <a href="{% url 'wardrobe:outfit_add' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Create Outfit
+        </a>
+    </div>
+
+    <!-- Outfits Grid -->
+    {% if outfits %}
+        <div class="row g-4 mb-4">
+            {% for outfit in outfits %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="outfit-card">
+                        <div class="outfit-preview">
+                            <div class="outfit-items-grid">
+                                {% for item in outfit.items.all|slice:":4" %}
+                                    <div class="outfit-item-preview">
+                                        <img src="{{ item.image_url }}" alt="{{ item.name }}"
+                                             onerror="this.src='https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=300'">
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            {% if outfit.items.count > 4 %}
+                                <div class="outfit-more-items">
+                                    +{{ outfit.items.count|add:"-4" }} more
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="outfit-content">
+                            <h5 class="outfit-title">{{ outfit.name }}</h5>
+                            
+                            <div class="outfit-details">
+                                <div class="d-flex justify-content-between text-muted mb-2">
+                                    <span><i class="bi bi-calendar me-1"></i>{{ outfit.occasion }}</span>
+                                    <span>{{ outfit.season }}</span>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="outfit-rating">
+                                        {% if outfit.rating %}
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= outfit.rating %}
+                                                    <i class="bi bi-star-fill text-warning"></i>
+                                                {% else %}
+                                                    <i class="bi bi-star text-muted"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                        <small class="text-muted ms-2">{{ outfit.items.count }} items</small>
+                                    </div>
+                                    
+                                    <div class="outfit-actions">
+                                        <a href="{% url 'wardrobe:outfit_detail' outfit.pk %}" 
+                                           class="btn btn-sm btn-outline-primary" title="View">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{% url 'wardrobe:outfit_delete' outfit.pk %}" 
+                                           class="btn btn-sm btn-outline-danger" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Outfits pagination">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <!-- Empty State -->
+        <div class="empty-state text-center py-5">
+            <i class="bi bi-palette display-1 text-muted mb-4"></i>
+            <h3 class="fw-semibold mb-3">No outfits yet</h3>
+            <p class="text-muted mb-4">Create your first outfit by combining items from your wardrobe.</p>
+            <a href="{% url 'wardrobe:outfit_add' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Create Your First Outfit
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ outfit.name }} - StyleVault{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 fw-bold">{{ outfit.name }}</h1>
+                    <p class="text-muted mb-0">{{ outfit.occasion }} • {{ outfit.season }}</p>
+                </div>
+                <div>
+                    <a href="{% url 'wardrobe:outfit_list' %}" class="btn btn-outline-secondary me-2">
+                        <i class="bi bi-arrow-left me-1"></i>Back
+                    </a>
+                    <a href="{% url 'wardrobe:outfit_delete' outfit.pk %}" class="btn btn-outline-danger">
+                        <i class="bi bi-trash me-1"></i>Delete
+                    </a>
+                </div>
+            </div>
+
+            <!-- Outfit Details -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Outfit Information</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Occasion:</strong></td>
+                                    <td>{{ outfit.occasion }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Season:</strong></td>
+                                    <td>{{ outfit.season }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Rating:</strong></td>
+                                    <td>
+                                        {% if outfit.rating %}
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= outfit.rating %}
+                                                    <i class="bi bi-star-fill text-warning"></i>
+                                                {% else %}
+                                                    <i class="bi bi-star text-muted"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            <span class="text-muted">Not rated</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Created:</strong></td>
+                                    <td>{{ outfit.created_at|date:"M d, Y" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Items ({{ outfit.items.count }})</h5>
+                            <div class="outfit-items-preview">
+                                <div class="row g-2">
+                                    {% for item in outfit.items.all|slice:":4" %}
+                                        <div class="col-6">
+                                            <img src="{{ item.image_url }}" alt="{{ item.name }}" 
+                                                 class="img-fluid rounded"
+                                                 onerror="this.src='https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=300'">
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- All Items in Outfit -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">All Items in This Outfit</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        {% for item in outfit.items.all %}
+                            <div class="col-sm-6 col-md-4 col-lg-3">
+                                <div class="outfit-item-detail">
+                                    <div class="item-image">
+                                        <img src="{{ item.image_url }}" alt="{{ item.name }}"
+                                             onerror="this.src='https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=300'">
+                                    </div>
+                                    <div class="item-info">
+                                        <h6 class="item-name">{{ item.name }}</h6>
+                                        <p class="item-details">{{ item.category }} • {{ item.color }}</p>
+                                        {% if item.brand %}
+                                            <p class="item-brand">{{ item.brand }}</p>
+                                        {% endif %}
+                                        <p class="item-wear-count">Worn {{ item.wear_count }} times</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.outfit-item-detail {
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.outfit-item-detail:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.outfit-item-detail .item-image {
+    aspect-ratio: 1;
+    overflow: hidden;
+}
+
+.outfit-item-detail .item-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.outfit-item-detail .item-info {
+    padding: 0.75rem;
+}
+
+.outfit-item-detail .item-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.outfit-item-detail .item-details,
+.outfit-item-detail .item-brand,
+.outfit-item-detail .item-wear-count {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+}
+
+.outfit-item-detail .item-brand {
+    color: #495057;
+    font-weight: 500;
+}
+</style>
+{% endblock %}
