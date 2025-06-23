@@ -15,8 +15,46 @@ export const useAuth = () => {
   const initialized = useRef(false);
   const profileCache = useRef<Map<string, Profile>>(new Map());
 
-  useEffect(() => {
+  const fetchUserProfile = async (authUser: User) => {
+    try {
+      setLoading(true);
+      
+      // Check cache first
+      const cachedProfile = profileCache.current.get(authUser.id);
+      if (cachedProfile) {
+        const userWithProfile = { ...authUser, profile: cachedProfile };
+        setUser(userWithProfile);
+        setLoading(false);
+        return;
+      }
+      
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', authUser.id)
+        .maybeSingle();
 
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching profile:', error);
+      }
+
+      const userWithProfile = { ...authUser, profile: profile || undefined };
+      
+      // Cache the profile
+      if (profile) {
+        profileCache.current.set(authUser.id, profile);
+      }
+      
+      setUser(userWithProfile);
+    } catch (error) {
+      console.error('Error in fetchUserProfile:', error);
+      setUser(authUser);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     let mounted = true;
 
     // Get initial session
@@ -56,8 +94,6 @@ export const useAuth = () => {
     let authTimeout: NodeJS.Timeout;
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-
-        
         // Debounce auth state changes to prevent rapid updates
         authTimeout = setTimeout(async () => {
           if (!mounted) return;
@@ -73,52 +109,6 @@ export const useAuth = () => {
         }, 100);
       }
     );
-
-
-      
-      try {
-        setLoading(true);
-        
-        // Check cache first
-        const cachedProfile = profileCache.current.get(authUser.id);
-        if (cachedProfile) {
-          const userWithProfile = { ...authUser, profile: cachedProfile };
-          setUser(userWithProfile);
-          setLoading(false);
-          return;
-        }
-        
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', authUser.id)
-          .maybeSingle();
-
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error fetching profile:', error);
-        }
-
-        if (mounted) {
-          const userWithProfile = { ...authUser, profile: profile || undefined };
-          
-          // Cache the profile
-          if (profile) {
-            profileCache.current.set(authUser.id, profile);
-          }
-          
-          setUser(userWithProfile);
-        }
-      } catch (error) {
-        console.error('Error in fetchUserProfile:', error);
-        if (mounted) {
-          setUser(authUser);
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    };
 
     return () => {
       mounted = false;
