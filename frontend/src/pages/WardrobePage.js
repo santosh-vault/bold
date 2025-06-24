@@ -249,7 +249,6 @@ const WardrobePage = () => {
                         required
                       />
                       {formErrors.name && <div className="invalid-feedback">{formErrors.name}</div>}
-                      }
                     </div>
                     
                     <div className="col-md-6">
@@ -266,7 +265,6 @@ const WardrobePage = () => {
                         ))}
                       </select>
                       {formErrors.category && <div className="invalid-feedback">{formErrors.category}</div>}
-                      }
                     </div>
                     
                     <div className="col-md-6">
@@ -281,7 +279,6 @@ const WardrobePage = () => {
                         required
                       />
                       {formErrors.color && <div className="invalid-feedback">{formErrors.color}</div>}
-                      }
                     </div>
                     
                     <div className="col-md-6">
@@ -295,7 +292,6 @@ const WardrobePage = () => {
                         placeholder="e.g., Levi's"
                       />
                       {formErrors.brand && <div className="invalid-feedback">{formErrors.brand}</div>}
-                      }
                     </div>
                     
                     <div className="col-md-6">
@@ -310,7 +306,6 @@ const WardrobePage = () => {
                         placeholder="0.00"
                       />
                       {formErrors.price && <div className="invalid-feedback">{formErrors.price}</div>}
-                      }
                     </div>
                     
                     <div className="col-md-6">
@@ -325,7 +320,6 @@ const WardrobePage = () => {
                       />
                       <div className="form-text">Separate tags with commas</div>
                       {formErrors.tags && <div className="invalid-feedback">{formErrors.tags}</div>}
-                      }
                     </div>
                     
                     <div className="col-12">
@@ -340,7 +334,6 @@ const WardrobePage = () => {
                         required
                       />
                       {formErrors.image_url && <div className="invalid-feedback">{formErrors.image_url}</div>}
-                      }
                     </div>
                   </div>
                 </div>

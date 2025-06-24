@@ -137,7 +137,6 @@ const RegisterPage = () => {
                 placeholder="Enter your full name"
               />
               {errors.name && <div className="invalid-feedback">{errors.name}</div>}
-              }
             </div>
 
             <div className="mb-3">
@@ -152,7 +151,6 @@ const RegisterPage = () => {
                 placeholder="Choose a username"
               />
               {errors.username && <div className="invalid-feedback">{errors.username}</div>}
-              }
             </div>
 
             <div className="mb-3">
@@ -167,7 +165,6 @@ const RegisterPage = () => {
                 placeholder="Enter your email"
               />
               {errors.email && <div className="invalid-feedback">{errors.email}</div>}
-              }
             </div>
 
             <div className="mb-3">
@@ -190,7 +187,6 @@ const RegisterPage = () => {
                   <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`}></i>
                 </button>
                 {errors.password && <div className="invalid-feedback">{errors.password}</div>}
-                }
               </div>
             </div>
 
@@ -214,7 +210,6 @@ const RegisterPage = () => {
                   <i className={`bi ${showConfirmPassword ? 'bi-eye-slash' : 'bi-eye'}`}></i>
                 </button>
                 {errors.confirmPassword && <div className="invalid-feedback">{errors.confirmPassword}</div>}
-                }
               </div>
             </div>
 
